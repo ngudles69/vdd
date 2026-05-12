@@ -70,3 +70,29 @@ test("shows the ported crochet symbol library", async ({ page }) => {
     fullPage: true,
   });
 });
+
+test("inserts a selected crochet symbol into the canvas", async ({ page }) => {
+  await page.setViewportSize({ width: 1600, height: 1000 });
+  await page.goto("/");
+
+  await page.waitForFunction(() => Boolean(window.__VDD_EXCALIDRAW_API__));
+  await page.getByRole("button", { name: "Symbols" }).click();
+  await page.getByRole("button", { name: "Single Crochet", exact: true }).click();
+
+  await expect
+    .poll(async () =>
+      page.evaluate(
+        () =>
+          window.__VDD_EXCALIDRAW_API__
+            ?.getSceneElements()
+            .filter((element) => element.type === "image").length ?? 0,
+      ),
+    )
+    .toBe(1);
+
+  await page.waitForTimeout(500);
+  await page.screenshot({
+    path: "test-results/editor-symbol-inserted.png",
+    fullPage: true,
+  });
+});

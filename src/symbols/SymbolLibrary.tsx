@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { insertCrochetSymbol } from "../editor/symbolInsertion";
 import { crochetSymbolCategories, crochetSymbols } from "./crochetSymbols";
 
 export function SymbolLibrary() {
@@ -54,6 +55,7 @@ export function SymbolLibrary() {
                   aria-label={symbol.name}
                   className="group flex min-h-24 flex-col items-center justify-between rounded-md border border-slate-200 bg-white p-2 text-center text-slate-800 transition hover:border-teal-500 hover:bg-teal-50"
                   key={symbol.id}
+                  onClick={() => insertCrochetSymbol(symbol)}
                   title={`${symbol.name} / ${symbol.nameUK}`}
                   type="button"
                 >
