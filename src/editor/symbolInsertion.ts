@@ -6,6 +6,7 @@ import {
 import type { BinaryFileData, DataURL } from "@excalidraw/excalidraw/types";
 import type { FileId } from "@excalidraw/excalidraw/element/types";
 import type { CrochetSymbol } from "../symbols/crochetSymbols";
+import { isArtboardPage } from "./artboardPage";
 import { getExcalidrawApi } from "./excalidrawApi";
 
 function encodeSvgDataUrl(svg: string): DataURL {
@@ -32,15 +33,22 @@ export function insertCrochetSymbol(symbol: CrochetSymbol) {
   }
 
   const appState = api.getAppState();
+  const elements = api.getSceneElementsIncludingDeleted();
+  const artboardPage = elements.find((element) => !element.isDeleted && isArtboardPage(element));
   const fileId = createFileId(symbol);
   const size = 96;
-  const center = viewportCoordsToSceneCoords(
-    {
-      clientX: appState.offsetLeft + appState.width / 2,
-      clientY: appState.offsetTop + appState.height / 2,
-    },
-    appState,
-  );
+  const center = artboardPage
+    ? {
+        x: artboardPage.x + artboardPage.width / 2,
+        y: artboardPage.y + artboardPage.height / 2,
+      }
+    : viewportCoordsToSceneCoords(
+        {
+          clientX: appState.offsetLeft + appState.width / 2,
+          clientY: appState.offsetTop + appState.height / 2,
+        },
+        appState,
+      );
 
   const [element] = convertToExcalidrawElements([
     {
@@ -64,7 +72,7 @@ export function insertCrochetSymbol(symbol: CrochetSymbol) {
 
   api.addFiles([file]);
   api.updateScene({
-    elements: [...api.getSceneElementsIncludingDeleted(), element],
+    elements: [...elements, element],
     appState: {
       selectedElementIds: {
         [element.id]: true,
@@ -72,7 +80,7 @@ export function insertCrochetSymbol(symbol: CrochetSymbol) {
     },
     captureUpdate: CaptureUpdateAction.IMMEDIATELY,
   });
-  api.scrollToContent(element, {
+  api.scrollToContent(artboardPage ? [artboardPage, element] : element, {
     fitToContent: false,
     animate: true,
   });

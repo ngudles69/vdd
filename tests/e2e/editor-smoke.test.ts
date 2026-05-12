@@ -26,18 +26,43 @@ test("renders the editor shell with an empty Excalidraw canvas", async ({ page }
   });
 });
 
-test("fits the TikTok portrait artboard to the available workspace", async ({ page }) => {
+test("keeps the TikTok artboard as a locked page inside a full workspace", async ({ page }) => {
   await page.setViewportSize({ width: 1800, height: 1200 });
   await page.goto("/");
 
   await page.getByRole("combobox", { name: "Canvas" }).selectOption("TIKTOK_9_16");
   await expect(page.getByRole("combobox", { name: "Canvas" })).toHaveValue("TIKTOK_9_16");
+  await page.waitForFunction(() => Boolean(window.__VDD_EXCALIDRAW_API__));
 
   const editor = page.locator(".excalidraw").first();
   const editorBox = await editor.boundingBox();
 
   expect(editorBox?.height).toBeGreaterThan(1000);
-  expect(editorBox?.width).toBeGreaterThan(550);
+  expect(editorBox?.width).toBeGreaterThan(1300);
+
+  await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        const pageElement = window.__VDD_EXCALIDRAW_API__
+          ?.getSceneElements()
+          .find((element) => element.customData?.role === "vdd-artboard-page");
+
+        return pageElement
+          ? {
+              height: pageElement.height,
+              locked: pageElement.locked,
+              type: pageElement.type,
+              width: pageElement.width,
+            }
+          : null;
+      }),
+    )
+    .toEqual({
+      height: 1920,
+      locked: true,
+      type: "rectangle",
+      width: 1080,
+    });
 
   await page.screenshot({
     path: "test-results/editor-tiktok-fit.png",
@@ -89,6 +114,34 @@ test("inserts a selected crochet symbol into the canvas", async ({ page }) => {
       ),
     )
     .toBe(1);
+
+  await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        const elements = window.__VDD_EXCALIDRAW_API__?.getSceneElements() ?? [];
+        const pageElement = elements.find(
+          (element) => element.customData?.role === "vdd-artboard-page",
+        );
+        const imageElement = elements.find((element) => element.type === "image");
+
+        if (!pageElement || !imageElement) {
+          return false;
+        }
+
+        const imageCenter = {
+          x: imageElement.x + imageElement.width / 2,
+          y: imageElement.y + imageElement.height / 2,
+        };
+
+        return (
+          imageCenter.x > pageElement.x &&
+          imageCenter.x < pageElement.x + pageElement.width &&
+          imageCenter.y > pageElement.y &&
+          imageCenter.y < pageElement.y + pageElement.height
+        );
+      }),
+    )
+    .toBe(true);
 
   await page.waitForTimeout(500);
   await page.screenshot({
