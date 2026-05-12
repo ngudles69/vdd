@@ -9,7 +9,10 @@ export function LeftPanel() {
   }
 
   return (
-    <aside className="min-h-0 overflow-y-auto border-r border-slate-200 bg-white shadow-sm">
+    <aside
+      aria-label="Elements drawer"
+      className="absolute bottom-0 left-[72px] top-0 z-30 w-80 overflow-y-auto border-r border-slate-200 bg-white shadow-xl"
+    >
       <SymbolLibrary />
     </aside>
   );

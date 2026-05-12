@@ -51,11 +51,19 @@ test("shows the ported crochet symbol library", async ({ page }) => {
 
   await page.getByRole("button", { name: "Symbols" }).click();
 
+  const drawer = page.getByLabel("Elements drawer");
+  await expect(drawer).toBeVisible();
   await expect(page.getByRole("heading", { name: "Elements" })).toBeVisible();
   await expect(page.getByPlaceholder("Search symbols")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Basic Stitches" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Single Crochet", exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Double Crochet", exact: true })).toBeVisible();
+
+  const drawerBox = await drawer.boundingBox();
+  const propertiesBox = await page.getByRole("heading", { name: "Properties" }).boundingBox();
+  expect(drawerBox?.x).toBeGreaterThanOrEqual(70);
+  expect(drawerBox?.x).toBeLessThan(90);
+  expect(propertiesBox?.x).toBeGreaterThan(1300);
 
   await page.screenshot({
     path: "test-results/editor-symbol-library.png",

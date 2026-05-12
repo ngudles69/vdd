@@ -38,6 +38,8 @@ Add focused tests as implementation appears. Prefer colocated tests named `*.tes
 
 Run the full test suite before opening a pull request. For UI changes, manually verify the editor in a browser.
 
+For any UI/layout change, do not report the work as done until it has been checked in Playwright headless and the resulting screenshot has been inspected. DOM assertions alone are not enough; verify the rendered layout visually with a Playwright screenshot.
+
 ## Commit & Pull Request Guidelines
 
 This directory is not currently a Git repository, so no local convention can be inferred. Use concise, imperative commit messages, for example `Add artboard preset store`.
