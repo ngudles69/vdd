@@ -44,3 +44,20 @@ test("fits the TikTok portrait artboard to the available workspace", async ({ pa
     fullPage: true,
   });
 });
+
+test("shows the ported crochet symbol library", async ({ page }) => {
+  await page.setViewportSize({ width: 1600, height: 1000 });
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Symbols" }).click();
+
+  await expect(page.getByRole("heading", { name: "Symbols" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Basic Stitches" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Single Crochet", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Double Crochet", exact: true })).toBeVisible();
+
+  await page.screenshot({
+    path: "test-results/editor-symbol-library.png",
+    fullPage: true,
+  });
+});

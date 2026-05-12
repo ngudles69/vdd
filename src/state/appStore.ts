@@ -45,16 +45,20 @@ const presets: Artboard[] = [
 ];
 
 type AppStore = {
+  activePanel: "Properties" | "Templates" | "Symbols" | "Guides" | "Shapes" | "Text" | "Groups" | "Export";
   artboard: Artboard;
   preset: ArtboardPresetId;
   presets: Artboard[];
+  setActivePanel: (panel: AppStore["activePanel"]) => void;
   setPreset: (preset: string) => void;
 };
 
 export const useAppStore = create<AppStore>((set) => ({
+  activePanel: "Properties",
   artboard: presets[0],
   preset: "A4_PORTRAIT",
   presets,
+  setActivePanel: (activePanel) => set({ activePanel }),
   setPreset: (preset) => {
     const nextArtboard = presets.find((item) => item.id === preset);
 
