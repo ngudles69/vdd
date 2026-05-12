@@ -26,7 +26,7 @@ test("renders the editor shell with an empty Excalidraw canvas", async ({ page }
   });
 });
 
-test("keeps the TikTok artboard as a locked page inside a full workspace", async ({ page }) => {
+test("keeps the TikTok artboard as an overlay inside a full workspace", async ({ page }) => {
   await page.setViewportSize({ width: 1800, height: 1200 });
   await page.goto("/");
 
@@ -40,29 +40,42 @@ test("keeps the TikTok artboard as a locked page inside a full workspace", async
   expect(editorBox?.height).toBeGreaterThan(1000);
   expect(editorBox?.width).toBeGreaterThan(1300);
 
+  await expect(page.getByTestId("artboard-overlay")).toBeVisible();
+
   await expect
     .poll(async () =>
-      page.evaluate(() => {
-        const pageElement = window.__VDD_EXCALIDRAW_API__
-          ?.getSceneElements()
-          .find((element) => element.customData?.role === "vdd-artboard-page");
+      page.getByTestId("artboard-overlay").boundingBox().then((artboardBox) => {
+        if (!artboardBox || !editorBox) {
+          return false;
+        }
 
-        return pageElement
-          ? {
-              height: pageElement.height,
-              locked: pageElement.locked,
-              type: pageElement.type,
-              width: pageElement.width,
-            }
-          : null;
+        const artboardCenter = {
+          x: artboardBox.x + artboardBox.width / 2,
+          y: artboardBox.y + artboardBox.height / 2,
+        };
+        const editorCenter = {
+          x: editorBox.x + editorBox.width / 2,
+          y: editorBox.y + editorBox.height / 2,
+        };
+
+        return (
+          Math.abs(artboardCenter.x - editorCenter.x) <= 2 &&
+          Math.abs(artboardCenter.y - editorCenter.y) <= 2 &&
+          Math.abs(artboardBox.width / artboardBox.height - 9 / 16) <= 0.01 &&
+          artboardBox.width > 500 &&
+          artboardBox.height > 900 &&
+          artboardBox.width < editorBox.width &&
+          artboardBox.height < editorBox.height
+        );
       }),
     )
-    .toEqual({
-      height: 1920,
-      locked: true,
-      type: "rectangle",
-      width: 1080,
-    });
+    .toBe(true);
+
+  await expect
+    .poll(async () =>
+      page.evaluate(() => window.__VDD_EXCALIDRAW_API__?.getSceneElements().length ?? -1),
+    )
+    .toBe(0);
 
   await page.screenshot({
     path: "test-results/editor-tiktok-fit.png",
@@ -119,12 +132,9 @@ test("inserts a selected crochet symbol into the canvas", async ({ page }) => {
     .poll(async () =>
       page.evaluate(() => {
         const elements = window.__VDD_EXCALIDRAW_API__?.getSceneElements() ?? [];
-        const pageElement = elements.find(
-          (element) => element.customData?.role === "vdd-artboard-page",
-        );
         const imageElement = elements.find((element) => element.type === "image");
 
-        if (!pageElement || !imageElement) {
+        if (!imageElement) {
           return false;
         }
 
@@ -133,19 +143,93 @@ test("inserts a selected crochet symbol into the canvas", async ({ page }) => {
           y: imageElement.y + imageElement.height / 2,
         };
 
-        return (
-          imageCenter.x > pageElement.x &&
-          imageCenter.x < pageElement.x + pageElement.width &&
-          imageCenter.y > pageElement.y &&
-          imageCenter.y < pageElement.y + pageElement.height
-        );
+        return Math.abs(imageCenter.x) <= 1 && Math.abs(imageCenter.y) <= 1;
       }),
     )
     .toBe(true);
 
+  await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        const elements = window.__VDD_EXCALIDRAW_API__?.getSceneElements() ?? [];
+        const imageIndex = elements.findIndex((element) => element.type === "image");
+        const imageElement = elements[imageIndex];
+
+        return {
+          frameId: imageElement?.frameId ?? null,
+          groupCount: imageElement?.groupIds.length ?? -1,
+          imageOnlySceneElement: elements.length === 1 && imageIndex === 0,
+          objectRole: imageElement?.customData?.role,
+        };
+      }),
+    )
+    .toEqual({
+      frameId: null,
+      groupCount: 0,
+      imageOnlySceneElement: true,
+      objectRole: "vdd-object",
+    });
+
   await page.waitForTimeout(500);
   await page.screenshot({
     path: "test-results/editor-symbol-inserted.png",
+    fullPage: true,
+  });
+
+  const dragStart = await page.evaluate(() => {
+    const api = window.__VDD_EXCALIDRAW_API__;
+    const imageElement = api?.getSceneElements().find((element) => element.type === "image");
+
+    if (!api || !imageElement) {
+      return null;
+    }
+
+    const appState = api.getAppState();
+    const zoom = appState.zoom.value;
+
+    return {
+      sceneX: imageElement.x,
+      sceneY: imageElement.y,
+      viewportX:
+        (imageElement.x + imageElement.width / 2 + appState.scrollX) * zoom +
+        appState.offsetLeft,
+      viewportY:
+        (imageElement.y + imageElement.height / 2 + appState.scrollY) * zoom +
+        appState.offsetTop,
+    };
+  });
+
+  expect(dragStart).not.toBeNull();
+  await page.mouse.move(dragStart!.viewportX, dragStart!.viewportY);
+  await page.mouse.down();
+  await page.mouse.move(dragStart!.viewportX + 140, dragStart!.viewportY + 90, {
+    steps: 8,
+  });
+  await page.mouse.up();
+
+  await expect
+    .poll(async () =>
+      page.evaluate((start) => {
+        const elements = window.__VDD_EXCALIDRAW_API__?.getSceneElements() ?? [];
+        const imageElement = elements.find((element) => element.type === "image");
+
+        if (!imageElement || !start) {
+          return false;
+        }
+
+        return (
+          elements.length === 1 &&
+          imageElement.frameId === null &&
+          imageElement.groupIds.length === 0 &&
+          imageElement.x > start.sceneX + 50 &&
+          imageElement.y > start.sceneY + 30
+        );
+      }, dragStart),
+    )
+    .toBe(true);
+
+  await page.screenshot({
+    path: "test-results/editor-symbol-dragged-independent.png",
     fullPage: true,
   });
 });
