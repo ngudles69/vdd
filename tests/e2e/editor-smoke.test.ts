@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test("renders the editor shell with an empty Excalidraw canvas", async ({ page }) => {
+  await page.setViewportSize({ width: 1600, height: 1000 });
   await page.goto("/");
 
   await expect(page.getByRole("heading", { name: "Crochet Design Editor" })).toBeVisible();
@@ -21,6 +22,25 @@ test("renders the editor shell with an empty Excalidraw canvas", async ({ page }
 
   await page.screenshot({
     path: "test-results/editor-smoke.png",
+    fullPage: true,
+  });
+});
+
+test("fits the TikTok portrait artboard to the available workspace", async ({ page }) => {
+  await page.setViewportSize({ width: 1800, height: 1200 });
+  await page.goto("/");
+
+  await page.getByRole("combobox", { name: "Canvas" }).selectOption("TIKTOK_9_16");
+  await expect(page.getByRole("combobox", { name: "Canvas" })).toHaveValue("TIKTOK_9_16");
+
+  const editor = page.locator(".excalidraw").first();
+  const editorBox = await editor.boundingBox();
+
+  expect(editorBox?.height).toBeGreaterThan(1000);
+  expect(editorBox?.width).toBeGreaterThan(550);
+
+  await page.screenshot({
+    path: "test-results/editor-tiktok-fit.png",
     fullPage: true,
   });
 });
