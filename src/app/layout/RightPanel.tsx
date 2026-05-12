@@ -1,17 +1,7 @@
-import { SymbolLibrary } from "../../symbols/SymbolLibrary";
 import { useAppStore } from "../../state/appStore";
 
 export function RightPanel() {
-  const activePanel = useAppStore((state) => state.activePanel);
   const artboard = useAppStore((state) => state.artboard);
-
-  if (activePanel === "Symbols") {
-    return (
-      <aside className="min-h-0 overflow-y-auto border-l border-slate-200 bg-white">
-        <SymbolLibrary />
-      </aside>
-    );
-  }
 
   return (
     <aside className="min-h-0 overflow-y-auto border-l border-slate-200 bg-white p-4">

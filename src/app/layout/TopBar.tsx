@@ -9,7 +9,7 @@ export function TopBar() {
   return (
     <header className="flex items-center justify-between gap-4 bg-white px-4">
       <div className="min-w-0">
-        <h1 className="truncate text-sm font-semibold">Crochet Design Editor</h1>
+        <h1 className="truncate text-sm font-semibold">Violet Drizzle Designer</h1>
         <p className="text-xs text-slate-500">Untitled project</p>
       </div>
 

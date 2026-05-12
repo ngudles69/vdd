@@ -4,7 +4,7 @@ test("renders the editor shell with an empty Excalidraw canvas", async ({ page }
   await page.setViewportSize({ width: 1600, height: 1000 });
   await page.goto("/");
 
-  await expect(page.getByRole("heading", { name: "Crochet Design Editor" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Violet Drizzle Designer" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Templates" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Properties" })).toBeVisible();
   await expect(page.getByRole("combobox", { name: "Canvas" })).toHaveValue("A4_PORTRAIT");
@@ -51,7 +51,8 @@ test("shows the ported crochet symbol library", async ({ page }) => {
 
   await page.getByRole("button", { name: "Symbols" }).click();
 
-  await expect(page.getByRole("heading", { name: "Symbols" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Elements" })).toBeVisible();
+  await expect(page.getByPlaceholder("Search symbols")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Basic Stitches" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Single Crochet", exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Double Crochet", exact: true })).toBeVisible();

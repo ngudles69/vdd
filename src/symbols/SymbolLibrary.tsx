@@ -1,17 +1,43 @@
+import { useMemo, useState } from "react";
 import { crochetSymbolCategories, crochetSymbols } from "./crochetSymbols";
 
 export function SymbolLibrary() {
+  const [query, setQuery] = useState("");
+  const normalizedQuery = query.trim().toLowerCase();
+
+  const visibleSymbols = useMemo(
+    () =>
+      crochetSymbols.filter((symbol) => {
+        if (!normalizedQuery) {
+          return true;
+        }
+
+        return symbol.tags.some((tag) => tag.toLowerCase().includes(normalizedQuery));
+      }),
+    [normalizedQuery],
+  );
+
   return (
-    <div className="space-y-5 p-4">
-      <div>
-        <h2 className="text-sm font-semibold text-slate-900">Symbols</h2>
-        <p className="mt-1 text-xs text-slate-500">
-          Ported from the previous stitch library. Insertion comes next.
-        </p>
+    <div className="space-y-4 p-4">
+      <div className="space-y-3">
+        <div>
+          <h2 className="text-base font-semibold text-slate-900">Elements</h2>
+          <p className="text-xs font-medium text-slate-500">Crochet symbols</p>
+        </div>
+        <label className="block">
+          <span className="sr-only">Search symbols</span>
+          <input
+            className="h-10 w-full rounded-md border border-slate-300 bg-slate-50 px-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-600 focus:bg-white focus:ring-2 focus:ring-teal-100"
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search symbols"
+            type="search"
+            value={query}
+          />
+        </label>
       </div>
 
       {crochetSymbolCategories.map((category) => {
-        const symbols = crochetSymbols.filter((symbol) => symbol.category === category.key);
+        const symbols = visibleSymbols.filter((symbol) => symbol.category === category.key);
 
         if (symbols.length === 0) {
           return null;
