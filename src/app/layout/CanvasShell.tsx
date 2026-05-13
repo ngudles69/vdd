@@ -6,7 +6,7 @@ export function CanvasShell() {
 
   return (
     <section className="relative min-h-0 overflow-hidden bg-slate-200">
-      <div className="absolute left-4 top-4 z-10 rounded-md border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600 shadow-sm">
+      <div className="absolute left-4 top-4 z-[2] rounded-md border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600 shadow-sm">
         {artboard.name}
       </div>
       <div className="h-full min-h-0">

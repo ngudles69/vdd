@@ -1,7 +1,9 @@
 export type GuideType = "square-grid" | "polar-grid" | "radial-guide" | "custom-svg-guide";
 
 export type SquareGridConfig = {
-  spacing: number;
+  horizontalSpacing: number;
+  verticalSpacing: number;
+  linkedSpacing: boolean;
   majorEvery?: number;
 };
 
@@ -9,6 +11,8 @@ export type PolarGridConfig = {
   rings: number;
   ringSpacing: number;
   angleStep: number;
+  startAngle: number;
+  sweepAngle: number;
 };
 
 export type RadialGuideConfig = {
@@ -23,6 +27,7 @@ export type CustomSvgGuideConfig = {
 };
 
 export type GuideLayer = {
+  role: "guide";
   id: string;
   name: string;
   type: GuideType;

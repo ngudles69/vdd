@@ -31,3 +31,19 @@ body {
   --color-primary-darkest: #134e4a;
   --color-primary-light: #ccfbf1;
 }
+
+.vdd-drawer-open .excalidraw .App-menu__left {
+  transform: translateX(320px);
+}
+
+.vdd-custom-floating-panel-active .excalidraw .App-menu__left {
+  display: none;
+}
+
+.vdd-drawer-open .vdd-symbol-floating-panel {
+  transform: translateX(320px);
+}
+
+.vdd-drawer-open .vdd-guide-floating-panel {
+  transform: translateX(320px);
+}

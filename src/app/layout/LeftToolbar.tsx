@@ -1,6 +1,8 @@
+import { clearSelectedElements } from "../../editor/selectedElementActions";
 import { useAppStore } from "../../state/appStore";
 
-const tools = ["Templates", "Symbols", "Guides", "Shapes", "Text", "Groups", "Export"];
+const tools = ["Templates", "Symbols", "Guides", "Shapes", "Text", "Groups", "Export"] as const;
+type ToolName = (typeof tools)[number];
 
 export function LeftToolbar() {
   const activePanel = useAppStore((state) => state.activePanel);
@@ -16,7 +18,15 @@ export function LeftToolbar() {
               : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
           }`}
           key={tool}
-          onClick={() => setActivePanel(tool as typeof activePanel)}
+          onClick={() => {
+            const nextPanel = activePanel === tool ? "Properties" : (tool as ToolName);
+
+            if (nextPanel === "Guides") {
+              clearSelectedElements();
+            }
+
+            setActivePanel(nextPanel);
+          }}
           type="button"
         >
           {tool}
